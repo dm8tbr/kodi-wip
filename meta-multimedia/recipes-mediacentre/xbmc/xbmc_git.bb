@@ -10,9 +10,6 @@ DEPENDS = "libusb1 libcec libplist expat yajl gperf-native libxmu fribidi mpeg2d
 
 SRCREV = "9efd3582d0270c3f09cc2b0d44025070abd041a1"
 
-# multiple issues
-PNBLACKLIST[xbmc] ?= "/usr/include/c++/ctime:70:11: error: '::gmtime' has not been declared"
-
 PV = "15.1+gitr${SRCPV}"
 PR = "r14"
 SRC_URI = "git://github.com/xbmc/xbmc.git;branch=Isengard \
