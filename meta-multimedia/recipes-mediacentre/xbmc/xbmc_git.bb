@@ -31,6 +31,9 @@ PACKAGECONFIG[opengl] = "--enable-gl,--enable-gles,glew"
 PACKAGECONFIG[openglesv2] = "--enable-gles,--enable-gl,"
 
 EXTRA_OECONF = " \
+    --build=${BUILD_SYS} \
+    --host=${HOST_SYS} \
+    --target=${TARGET_SYS} ${@append_libtool_sysroot(d)} \
     --disable-rpath \
     --enable-libusb \
     --enable-airplay \
@@ -38,6 +41,9 @@ EXTRA_OECONF = " \
     --enable-external-libraries \
     ${@base_contains('DISTRO_FEATURES', 'opengl', '--enable-gl', '--enable-gles', d)} \
 "
+
+CXXFLAGS += " -I${STAGING_KERNEL_DIR}/include/uapi -I${STAGING_KERNEL_DIR}/include "
+CFLAGS += " -I${STAGING_KERNEL_DIR}/include/uapi -I${STAGING_KERNEL_DIR}/include "
 
 FULL_OPTIMIZATION_armv7a = "-fexpensive-optimizations -fomit-frame-pointer -O4 -ffast-math"
 BUILD_OPTIMIZATION = "${FULL_OPTIMIZATION}"
@@ -52,9 +58,25 @@ export STAGING_INCDIR
 export PYTHON_DIR
 
 do_configure() {
+    export TINYXML_CFLAGS="-I/${STAGING_INCDIR}"
+    export TINYXML_LIBS="-L${STAGING_LIBDIR} -ltinyxml"
+    export SQUISH_CFLAGS="-I/${STAGING_INCDIR}"
+    export SQUISH_LIBS="-L${STAGING_LIBDIR} -lsquish"
+    export PYTHON_EXTRA_LDFLAGS=""
+    export PYTHON_EXTRA_LIBS="-lz"
+    export PYTHON_VERSION="${PYTHON_BASEVERSION}"
+    export PYTHON_NOVERSIONCHECK="no-check"
+    export PYTHON_CPPFLAGS="-I/${STAGING_INCDIR}/${PYTHON_DIR}"
+    export PYTHON_LDFLAGS="-L${STAGING_LIBDIR} -lpython${PYTHON_BASEVERSION}"
     cd ${S}
-    sh bootstrap
+    sh ./bootstrap
+    cd tools/depends
+    sh ./bootstrap
+    sh ./configure ${EXTRA_OECONF}
+    sh make
+    cd ../..
     oe_runconf
+
 }
 
 PARALLEL_MAKE = ""
