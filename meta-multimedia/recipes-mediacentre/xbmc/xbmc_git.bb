@@ -7,19 +7,14 @@ DEPENDS = "libusb1 libcec libplist expat yajl gperf-native libxmu fribidi mpeg2d
 #require recipes/egl/egl.inc
 
 
-SRCREV = "82388d55dae79cbb2e486e307e23202e76a43efa"
+SRCREV = "9efd3582d0270c3f09cc2b0d44025070abd041a1"
 
 # multiple issues
 PNBLACKLIST[xbmc] ?= "/usr/include/c++/ctime:70:11: error: '::gmtime' has not been declared"
 
-PV = "11.0+gitr${SRCPV}"
+PV = "15.1+gitr${SRCPV}"
 PR = "r14"
-SRC_URI = "git://github.com/xbmc/xbmc.git;branch=Eden \
-           file://0001-configure-don-t-run-python-distutils-to-find-STAGING.patch \
-           file://0002-Revert-fixed-ios-Add-memory-barriers-to-atomic-Add-S.patch \
-           file://0003-Revert-fixed-ios-Add-memory-barriers-to-cas-assembly.patch \
-           file://0004-configure-cope-with-ld-is-gold-DISTRO_FEATURE.patch \
-           file://configure.in-Avoid-running-code.patch \
+SRC_URI = "git://github.com/xbmc/xbmc.git;branch=Isengard \
 "
 
 inherit autotools gettext python-dir
