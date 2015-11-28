@@ -3,8 +3,8 @@ SUMMARY = "XBMC Media Center"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://LICENSE.GPL;md5=6eb631b6da7fdb01508a80213ffc35ff"
 
-#Undeclared compile time dependencie, used from host system: openjdk-7, … 
-DEPENDS = "libusb1 libcec libplist expat yajl gperf-native libxmu fribidi mpeg2dec ffmpeg samba fontconfig curl python libass libmodplug libmicrohttpd wavpack libmms cmake-native libsdl-image libsdl-mixer virtual/egl mysql5 sqlite3 libmms faad2 libcdio libpcre boost lzo enca avahi libsamplerate0 libxinerama libxrandr libxtst bzip2 virtual/libsdl jasper zip-native zlib zlib-native libtinyxml libmad swig-native python-json"
+#Undeclared compile time dependencie, used from host system: openjdk-7, cmake, … 
+DEPENDS = "libusb1 libcec libplist expat yajl gperf-native libxmu fribidi mpeg2dec ffmpeg samba fontconfig curl python libass libmodplug libmicrohttpd wavpack libmms cmake-native libsdl-image libsdl-mixer virtual/egl mysql5 sqlite3 libmms faad2 libcdio libpcre boost lzo enca avahi libsamplerate0 libxinerama libxrandr libxtst bzip2 virtual/libsdl jasper zip-native zlib zlib-native libtinyxml libmad swig-native curl-native python-json fakeroot libjpeg-turbo-native libpng-native"
 #require recipes/egl/egl.inc
 
 
@@ -15,7 +15,7 @@ PR = "r14"
 SRC_URI = "git://github.com/xbmc/xbmc.git;branch=Isengard \
 "
 
-inherit autotools gettext python-dir
+inherit autotools-brokensep gettext python-dir
 
 S = "${WORKDIR}/git"
 
@@ -30,10 +30,7 @@ PACKAGECONFIG ??= "${@base_contains('DISTRO_FEATURES', 'opengl', 'opengl', 'open
 PACKAGECONFIG[opengl] = "--enable-gl,--enable-gles,glew"
 PACKAGECONFIG[openglesv2] = "--enable-gles,--enable-gl,"
 
-EXTRA_OECONF = " \
-    --build=${BUILD_SYS} \
-    --host=${HOST_SYS} \
-    --target=${TARGET_SYS} ${@append_libtool_sysroot(d)} \
+EXTRA_OECONF = " --disable-debug \
     --disable-rpath \
     --enable-libusb \
     --enable-airplay \
@@ -68,13 +65,29 @@ do_configure() {
     export PYTHON_NOVERSIONCHECK="no-check"
     export PYTHON_CPPFLAGS="-I/${STAGING_INCDIR}/${PYTHON_DIR}"
     export PYTHON_LDFLAGS="-L${STAGING_LIBDIR} -lpython${PYTHON_BASEVERSION}"
-    cd ${S}
-    sh ./bootstrap
-    cd tools/depends
-    sh ./bootstrap
-    sh ./configure ${EXTRA_OECONF}
-    sh make
-    cd ../..
+
+    sh bootstrap
+
+    # I suspect this is a native tool, so cheat
+    (
+    unset CC
+    unset LD
+    unset LDFLAGS
+    unset CFLAGS
+    CFLAGS="$CFLAGS -I${STAGING_DIR_NATIVE}/usr/include/"
+    CXXFLAGS="$CXXFLAGS -I${STAGING_DIR_NATIVE}/usr/include/"
+    CPPFLAGS="$CPPFLAGS -I${STAGING_DIR_NATIVE}/usr/include/"
+
+    cd tools/depends/native/JsonSchemaBuilder
+#    sh ./autogen.sh
+#    sh ./configure \
+#    --prefix=${STAGING_DIR_NATIVE}/${prefix_native} 
+#    --build=${BUILD_SYS} 
+#    --host=${HOST_SYS} 
+#    --target=${TARGET_SYS}
+
+    make )
+
     oe_runconf
 
 }
